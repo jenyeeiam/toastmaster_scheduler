@@ -1,0 +1,40 @@
+<h1>The Word Toastmasters Schedule</h1>
+<% if @header %>
+  <h3><%= @header %></h3>
+  <p>
+    Your next schedule for this week
+  </p>
+<% end %>
+<ul class='unstyled'>
+  <% @roles.each do |role, name| %>
+    <li>
+      <%= "#{role.gsub('_', ' ').upcase}: #{name}" %>
+    </li>
+  <% end %>
+</ul>
+
+<h3>Select a role to edit</h3>
+<form action="/roles" method="post">
+  <label for="roles_list">Select a Role</label>
+  <select id='roles_list' name='roles_list' type='text'>
+    <% @roles.keys.each do |role| %>
+      <option value="<%= role %>"> <%= role.gsub('_', ' ') %> </option>
+    <% end %>
+  </select>
+
+  <label for="member_list">Select a Member</label>
+  <select id='member_list' name='member_list' type='text'>
+    <% @members.push('Open').each do |member| %>
+      <option value="<%= member %>"> <%= member %> </option>
+    <% end %>
+  </select>
+  <button type='submit' class='btn btn-primary'>Change this role</button>
+</form>
+
+<a href="/mailer">
+  <button type='submit' class='btn btn-success'>Email this to me</button>
+</a>
+
+<form action "/schedule" method="post" style="margin-top: 20px;">
+  <button type="submit" class="btn btn-danger">Submit this schedule</button>
+</form>
