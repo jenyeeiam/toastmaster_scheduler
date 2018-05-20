@@ -103,7 +103,7 @@ class App < Sinatra::Base
 
   get '/mailer' do
     mail = Mail.new
-    mail.from = Email.new(email: 'jenyee1022@gmail.com')
+    mail.from = Email.new(email: 'toasty_scheduler@theword.com')
     mail.reply_to = Email.new(email: 'jenyee1022@gmail.com')
     mail.subject = 'Your next schedule'
     @store = YAML::Store.new 'members.yml'
@@ -131,7 +131,7 @@ class App < Sinatra::Base
     @store = YAML::Store.new 'members.yml'
     @roles = @store.transaction { @store['members'] }
     @freq_store = YAML::Store.new 'role_frequencies.yml'
-    @frequencies = @freq_store.transaction { @store['role_frequencies']}
+    @frequencies = @freq_store.transaction { @freq_store['role_frequencies']}
 
     @roles.each do |role, member|
       unless member == 'Open'
@@ -139,9 +139,17 @@ class App < Sinatra::Base
         if role == 'grammarian' || role == 'ah_counter' || role == 'timer'
           generic_role = 'functionary'
         end
-        con.exec("UPDATE members SET #{generic_role} = #{@frequencies[role]} WHERE name = '#{member}'")
+        # creates an array of all the roles decremented
+        member_role_freqs = con.exec("SELECT speaker, evaluator, toastmaster, chair, ge, topics_master, functionary, tt_evaluator FROM members where name = '#{member}'").values.first.map{|d| d.to_i == 0 ? d.to_i : d.to_i - 1}
+        puts "#{member} - #{member_role_freqs}"
+
+        # decrements the db
+        decrement = con.exec("UPDATE members SET (speaker, evaluator, toastmaster, chair, ge, topics_master, functionary, tt_evaluator) = (#{member_role_freqs.join(', ')}) WHERE name = '#{member}'")
+        # This resets the counter
+        reset_cmd = con.exec("UPDATE members SET #{generic_role} = #{@frequencies[role]} WHERE name = '#{member}'")
+
       end
     end
-    redirect '/'
+    redirect '/revised'
   end
 end

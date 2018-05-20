@@ -5,6 +5,7 @@ con = PG.connect :dbname => ENV['DATABASE_URL']
 
 desc "Seed the members from csv club roster"
 task :seed_members do
+  con.exec "DELETE FROM members"
   CSV.foreach('lib/tasks/Club-Roster.csv', headers: true) do |row|
     con.exec("INSERT INTO members VALUES (#{row[row.first.first].to_i}, '#{row['Name']}', '#{row['Email']}', #{rand(0..6)}, #{rand(0..6)}, #{rand(0..4)}, #{rand(0..4)}, #{rand(0..4)}, #{rand(0..4)}, #{rand(0..6)}, #{rand(0..8)})")
     puts row
