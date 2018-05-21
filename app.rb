@@ -16,7 +16,6 @@ class App < Sinatra::Base
   con = PG.connect :dbname => ENV['DATABASE_URL']
 
   get '/' do
-    binding.pry
     @roles = {
       'speaker_1' => '',
       'speaker_2' => '',
