@@ -17,8 +17,6 @@ Dir["#{current_dir}/models/*.rb"].each { |file| require file }
 
 class App < Sinatra::Base
 
-  ENV['DATABASE_URL'] ||= "toasty_development"
-
   get '/' do
     @header = "Proposed Schedule This Week"
     @roles = {
