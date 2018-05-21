@@ -1,3 +1,5 @@
+require 'uri'
+
 configure :development do
  set :database, 'postgres://localhost/toasty_development'
  set :show_exceptions, true
