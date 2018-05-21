@@ -7,9 +7,10 @@ require 'sendgrid-ruby'
 include SendGrid
 require 'dotenv/load'
 require 'active_record'
-set :database_file, 'config/database.yml'
+# set :database_file, 'config/database.yml'
+require './environments'
 
-ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'] || 'postgres://localhost/toasty_development')
+# ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'] || 'postgres://localhost/toasty_development')
 
 current_dir = Dir.pwd
 Dir["#{current_dir}/models/*.rb"].each { |file| require file }
