@@ -17,9 +17,9 @@ Dir["#{current_dir}/models/*.rb"].each { |file| require file }
 class App < Sinatra::Base
 
   ENV['DATABASE_URL'] ||= "toasty_development"
-  con = PG.connect :dbname => ENV['DATABASE_URL']
 
   get '/' do
+    @header = "Proposed Schedule This Week"
     @roles = {
       'speaker_1' => '',
       'speaker_2' => '',
@@ -37,52 +37,52 @@ class App < Sinatra::Base
       'ah_counter' => '',
       'timer' => ''
     }
-    speakers = con.exec("select name from members order by speaker asc").values.map{|m| m.first}
+    speakers = Member.order(:speaker).limit(3).pluck(:name)
     @roles['speaker_1'] = speakers[0]
     @roles['speaker_2'] = speakers[1]
     @roles['speaker_3'] = speakers[2]
 
-    evaluators_sorted = con.exec("select name from members order by evaluator asc").values.map{|m| m.first}
+    evaluators_sorted = Member.order(:evaluator).pluck(:name)
 
     evaluators = evaluators_sorted - @roles.values
     @roles['evaluator_1'] = evaluators[0]
     @roles['evaluator_2'] = evaluators[1]
     @roles['evaluator_3'] = evaluators[2]
 
-    tt_evaluators_sorted = con.exec("select name from members order by tt_evaluator asc").values.map{|m| m.first}
+    tt_evaluators_sorted = Member.order(:tt_evaluator).pluck(:name)
 
     tt_evaluators = tt_evaluators_sorted - @roles.values
     @roles['tt_evaluator_1'] = tt_evaluators[0]
     @roles['tt_evaluator_2'] = tt_evaluators[1]
 
-    toastmasters_sorted = con.exec("select name from members order by toastmaster asc").values.map{|m| m.first}
+    toastmasters_sorted = Member.order(:toastmaster).pluck(:name)
 
     toastmasters = toastmasters_sorted - @roles.values
     @roles['toastmaster'] = toastmasters[0]
 
-    chairs_sorted = con.exec("select name from members order by chair asc").values.map{|m| m.first}
+    chairs_sorted = Member.order(:chair).pluck(:name)
 
     chairs = chairs_sorted - @roles.values
     @roles['chair'] = chairs[0]
 
-    topics_masters_sorted = con.exec("select name from members order by topics_master asc").values.map{|m| m.first}
+    topics_masters_sorted = Member.order(:topics_master).pluck(:name)
 
     topics_masters = topics_masters_sorted - @roles.values
     @roles['topics_master'] = topics_masters[0]
 
-    ges_sorted = con.exec("select name from members order by ge asc").values.map{|m| m.first}
+    ges_sorted = Member.order(:ge).pluck(:name)
 
     ges = ges_sorted - @roles.values
     @roles['ge'] = ges[0]
 
-    functionaries_sorted = con.exec("select name from members order by functionary asc").values.map{|m| m.first}
+    functionaries_sorted = Member.order(:functionary).pluck(:name)
 
     functionaries = functionaries_sorted - @roles.values
     @roles['ah_counter'] = functionaries[0]
     @roles['grammarian'] = functionaries[1]
     @roles['timer'] = functionaries[2]
 
-    @members = con.exec("select name from members").values.map{|m| m.first}
+    @members = Member.pluck(:name)
 
     @store = YAML::Store.new 'members.yml'
     @store.transaction do
@@ -103,7 +103,8 @@ class App < Sinatra::Base
   get '/revised' do
     @store = YAML::Store.new 'members.yml'
     @roles = @store.transaction { @store['members'] }
-    @members = con.exec("select name from members").values.map{|m| m.first}
+    @members = Member.pluck(:name)
+    @header = "Revised Schedule This Week"
     erb :index
   end
 
@@ -127,7 +128,7 @@ class App < Sinatra::Base
     puts response.status_code
     puts response.body
     puts response.headers
-    @members = con.exec("select name from members").values.map{|m| m.first}
+    @members = Member.pluck(:name)
     @header = "Thanks for Playing"
     erb :index
   end
@@ -145,15 +146,22 @@ class App < Sinatra::Base
         if role == 'grammarian' || role == 'ah_counter' || role == 'timer'
           generic_role = 'functionary'
         end
-        # creates an array of all the roles decremented
-        member_role_freqs = con.exec("SELECT speaker, evaluator, toastmaster, chair, ge, topics_master, functionary, tt_evaluator FROM members where name = '#{member}'").values.first.map{|d| d.to_i == 0 ? d.to_i : d.to_i - 1}
-        puts "#{member} - #{member_role_freqs}"
+        member_role_freqs = Member.select("speaker, evaluator, toastmaster, chair, ge, topics_master, functionary, tt_evaluator").where('name = ?', member).first
+        puts member_role_freqs.inspect
 
-        # decrements the db
-        decrement = con.exec("UPDATE members SET (speaker, evaluator, toastmaster, chair, ge, topics_master, functionary, tt_evaluator) = (#{member_role_freqs.join(', ')}) WHERE name = '#{member}'")
-        # This resets the counter
-        reset_cmd = con.exec("UPDATE members SET #{generic_role} = #{@frequencies[role]} WHERE name = '#{member}'")
-
+        # decrements all the roles
+        member_role_freqs.speaker -= 1 if member_role_freqs.speaker != 0
+        member_role_freqs.evaluator -= 1 if member_role_freqs.evaluator != 0
+        member_role_freqs.toastmaster -= 1 if member_role_freqs.toastmaster != 0
+        member_role_freqs.chair -= 1 if member_role_freqs.chair != 0
+        member_role_freqs.ge -= 1 if member_role_freqs.ge != 0
+        member_role_freqs.topics_master -= 1 if member_role_freqs.topics_master != 0
+        member_role_freqs.functionary -= 1 if member_role_freqs.functionary != 0
+        member_role_freqs.tt_evaluator -= 1 if member_role_freqs.tt_evaluator != 0
+        # This resets the counter for the role fullfilled this week
+        member_role_freqs[generic_role] = @frequencies[role]
+        member_role_freqs.save
+        puts member_role_freqs.inspect
       end
     end
     redirect '/revised'
