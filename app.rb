@@ -118,6 +118,7 @@ class App < Sinatra::Base
     @roles.each do |role, member|
       html_content << "<p>#{role.gsub('_', ' ').upcase}: #{member}</p>"
     end
+    html_content << "<a href='https://toasty-scheduler.herokuapp.com/revised'>Go to revised schedule</a>"
     mail.add_content(Content.new(type: 'text/html', value: "<html><body>#{html_content}</body></html>"))
     personalization = Personalization.new
     personalization.add_to(Email.new(email: 'jenyee1022@gmail.com', name: 'Jen'))
@@ -128,7 +129,7 @@ class App < Sinatra::Base
     puts response.body
     puts response.headers
     @members = Member.pluck(:name)
-    @header = "Thanks for Playing"
+    @header = "Email Successfully Sent!"
     erb :index
   end
 

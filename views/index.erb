@@ -1,7 +1,6 @@
 <h1>The Word Toastmasters Schedule</h1>
-<% if @header %>
-  <h3><%= @header %></h3>
-<% end %>
+<h3><%= @header %></h3>
+
 <ul class='unstyled'>
   <% @roles.each do |role, name| %>
     <li>
@@ -27,6 +26,12 @@
   </select>
   <button type='submit' class='btn btn-primary'>Change this role</button>
 </form>
+
+<% if @header == "Revised Schedule This Week" %>
+  <a href="/">
+    <button type="button" class="btn btn-outline-info">Reset</button>
+  </a>
+<% end %>
 
 <a href="/mailer">
   <button type='submit' class='btn btn-success'>Email this to me</button>
