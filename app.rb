@@ -7,10 +7,7 @@ require 'sendgrid-ruby'
 include SendGrid
 require 'dotenv/load'
 require 'active_record'
-# set :database_file, 'config/database.yml'
 require './environments'
-
-# ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'] || 'postgres://localhost/toasty_development')
 
 current_dir = Dir.pwd
 Dir["#{current_dir}/models/*.rb"].each { |file| require file }
@@ -36,7 +33,7 @@ class App < Sinatra::Base
       'ah_counter' => '',
       'timer' => ''
     }
-    speakers = Member.order(:speaker).limit(3).pluck(:name)
+    speakers = Member.order(:speaker).pluck(:name)
     @roles['speaker_1'] = speakers[0]
     @roles['speaker_2'] = speakers[1]
     @roles['speaker_3'] = speakers[2]
@@ -126,8 +123,6 @@ class App < Sinatra::Base
     sg = SendGrid::API.new(api_key: ENV['SENDGRID_API_KEY'])
     response = sg.client.mail._('send').post(request_body: mail.to_json)
     puts response.status_code
-    puts response.body
-    puts response.headers
     @members = Member.pluck(:name)
     @header = "Email Successfully Sent!"
     erb :index
@@ -146,9 +141,7 @@ class App < Sinatra::Base
         if role == 'grammarian' || role == 'ah_counter' || role == 'timer'
           generic_role = 'functionary'
         end
-        member_role_freqs = Member.select("speaker, evaluator, toastmaster, chair, ge, topics_master, functionary, tt_evaluator").where('name = ?', member).first
-        puts member_role_freqs.inspect
-
+        member_role_freqs = Member.find_by(name: member)
         # decrements all the roles
         member_role_freqs.speaker -= 1 if member_role_freqs.speaker != 0
         member_role_freqs.evaluator -= 1 if member_role_freqs.evaluator != 0
@@ -161,9 +154,8 @@ class App < Sinatra::Base
         # This resets the counter for the role fullfilled this week
         member_role_freqs[generic_role] = @frequencies[role]
         member_role_freqs.save
-        puts member_role_freqs.inspect
       end
     end
-    redirect '/revised'
+    redirect '/'
   end
 end
