@@ -119,6 +119,7 @@ class App < Sinatra::Base
     mail.add_content(Content.new(type: 'text/html', value: "<html><body>#{html_content}</body></html>"))
     personalization = Personalization.new
     personalization.add_to(Email.new(email: 'jenyee1022@gmail.com', name: 'Jen'))
+    personalization.add_to(Email.new(email: 'jennifer@urbanlogiq.com', name: 'Jen2'))
     mail.add_personalization(personalization)
     sg = SendGrid::API.new(api_key: ENV['SENDGRID_API_KEY'])
     response = sg.client.mail._('send').post(request_body: mail.to_json)
