@@ -115,11 +115,12 @@ class App < Sinatra::Base
     @roles.each do |role, member|
       html_content << "<p>#{role.gsub('_', ' ').upcase}: #{member}</p>"
     end
-    html_content << "<a href='https://toasty-scheduler.herokuapp.com/revised'>Go to revised schedule</a>"
+    html_content << "<a href='https://toasty-scheduler.herokuapp.com/revised'>Go to schedule</a>"
     mail.add_content(Content.new(type: 'text/html', value: "<html><body>#{html_content}</body></html>"))
     personalization = Personalization.new
     personalization.add_to(Email.new(email: 'jenyee1022@gmail.com', name: 'Jen'))
-    personalization.add_to(Email.new(email: 'jennifer@urbanlogiq.com', name: 'Jen2'))
+    personalization.add_to(Email.new(email: 'jeff-malou@outlook.com', name: 'Jeff'))
+    personalization.add_to(Email.new(email: 'shirleyzhang86@yahoo.com ', name: 'Shirley'))
     mail.add_personalization(personalization)
     sg = SendGrid::API.new(api_key: ENV['SENDGRID_API_KEY'])
     response = sg.client.mail._('send').post(request_body: mail.to_json)
