@@ -26,17 +26,17 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
     rack (2.0.5)
-    rack-protection (2.0.1)
+    rack-protection (2.0.3)
       rack
     rake (12.3.1)
     ruby_http_client (3.3.0)
     sendgrid-ruby (5.2.0)
       ruby_http_client (~> 3.2)
       sinatra (>= 1.4.7, < 3)
-    sinatra (2.0.1)
+    sinatra (2.0.3)
       mustermann (~> 1.0)
       rack (~> 2.0)
-      rack-protection (= 2.0.1)
+      rack-protection (= 2.0.3)
       tilt (~> 2.0)
     sinatra-activerecord (2.0.13)
       activerecord (>= 3.2)
@@ -56,7 +56,7 @@ DEPENDENCIES
   pry
   rake
   sendgrid-ruby
-  sinatra
+  sinatra (~> 2.0.2)
   sinatra-activerecord
 
 BUNDLED WITH

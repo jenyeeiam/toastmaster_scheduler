@@ -15,6 +15,7 @@ Dir["#{current_dir}/models/*.rb"].each { |file| require file }
 class App < Sinatra::Base
 
   get '/' do
+    puts "HERE"
     @header = "Proposed Schedule This Week"
     @roles = {
       'speaker_1' => '',

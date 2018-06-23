@@ -1,5 +1,5 @@
 source "https://rubygems.org"
-gem "sinatra"
+gem 'sinatra', '~> 2.0.2'
 gem "pg"
 gem "pry"
 gem "sendgrid-ruby"
